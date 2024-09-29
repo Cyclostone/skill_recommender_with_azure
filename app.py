@@ -113,4 +113,4 @@ def get_courses_for_missing_skills(missing_skills):
 
         return all_resources
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host = '0.0.0.0', port=8000)
