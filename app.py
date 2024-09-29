@@ -78,10 +78,10 @@ def extract_and_compare_skills(resume_text, job_title):
     missing_skills = extract_missing_skills_from_result(result)
     course_recommendations = get_courses_for_missing_skills(missing_skills)
 
-    format_recommendations = format_recommendations(course_recommendations)
+    format_recommendation = format_recommendations(course_recommendations)
     print(result)
     print(course_recommendations)
-    return result, course_recommendations
+    return result, format_recommendation
 
 def extract_missing_skills_from_result(result): 
     missing_skills = []
