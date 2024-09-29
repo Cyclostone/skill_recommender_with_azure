@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="form-card">
+            <h1>Resume Analyzer</h1>
+            <p>Upload your resume and let us analyze it for missing skills based on your target job title!</p>
+
+            <!-- Form for uploading resume and entering job title -->
+            <form action="/upload_resume" method="post" enctype="multipart/form-data">
+                <div class="input-group">
+                    <label for="job_title">Job Title:</label>
+                    <input type="text" id="job_title" name="job_title" placeholder="Enter your desired job title" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="file">Upload Resume (PDF only):</label>
+                    <input type="file" id="file" name="file" accept=".pdf" required>
+                </div>
+
+                <button type="submit">Analyze Resume</button>
+            </form>
+
+            <!-- Error Message Display -->
+            {% if error %}
+            <div class="error">
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Skill Comparison Result Display (Missing Skills) -->
+            {% if skill_comparison_result %}
+            <div class="results">
+                <h2>Missing Skills</h2>
+                <pre>{{ skill_comparison_result }}</pre>
+            </div>
+            {% endif %}
+
+            <!-- Course Recommendations Display -->
+            {% if formatted_recommendations %}
+            <div class="recommendations">
+                <h2>Recommended Learning Resources</h2>
+                <div class="recommendation-content">
+                    {{ formatted_recommendations|safe }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -2,8 +2,14 @@ from flask import Flask, request, jsonify
 import pdfplumber
 import openai
 import requests
+from flask import render_template, redirect, url_for
+import os
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 openai.api_key = "375f3ceb969a451ab35668c1a7e21812"
 openai.azure_endpoint = "https://ai-endpoint-mk1.openai.azure.com/"
@@ -15,24 +21,26 @@ YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search'
 
 @app.route('/')
 def home():
-    return "Welcome to the Resume Analyzer API"
+    return render_template('index.html')
 
 @app.route('/upload_resume', methods=['POST'])
 def upload_resume():
-    file = request.files['file']
-    job_title = request.form['job_title']
+    #file = request.files['file']
+    #job_title = request.form['job_title']
 
-    if file and file.filename.endswith('.pdf'):
+    file = request.files.get('file')
+    job_title = request.form.get('job_title')
+
+
+    if not file or not file.filename.endswith('.pdf'):
+        return jsonify({"error": "Invalid file format. Please upload a PDF."}), 400
+    else:
         text = extract_text_from_pdf(file)
 
-        skill_comparison_result = extract_and_compare_skills(text, job_title)
+        skill_comparison_result, course_recommendations = extract_and_compare_skills(text, job_title)
 
-        return jsonify({
-            'skill_comparison_result': skill_comparison_result,
-            'message': 'Skills extracted successfully'
-        })
-    else:
-        return jsonify({"error": "Invalid file format. Please upload a PDF."}), 400
+        return render_template('index.html', skill_comparison_result=skill_comparison_result, course_recommendations=course_recommendations)
+        
     
 def extract_text_from_pdf(pdf_file):
     with pdfplumber.open(pdf_file) as pdf:
@@ -69,11 +77,13 @@ def extract_and_compare_skills(resume_text, job_title):
     result = response.choices[0].text.strip()
     missing_skills = extract_missing_skills_from_result(result)
     course_recommendations = get_courses_for_missing_skills(missing_skills)
+
+    format_recommendations = format_recommendations(course_recommendations)
     print(result)
     print(course_recommendations)
     return result, course_recommendations
 
-def extract_missing_skills_from_result(result):
+def extract_missing_skills_from_result(result): 
     missing_skills = []
     lines = result.splitlines()
 
@@ -112,5 +122,19 @@ def get_courses_for_missing_skills(missing_skills):
         })
 
         return all_resources
+    
+def format_recommendations(course_recommendations):
+    formatted_recommendations = ""
+
+    for recommendation in course_recommendations:
+        formatted_recommendations += f"<h3>{recommendation['skill_name']}</h3>\n<ul>"
+        for resource in recommendation['resources']:
+            formatted_recommendations += f"<li><a href='{resource['url']}' target='_blank'>{resource['title']}</a> ({resource['platform']})</li>\n"
+        formatted_recommendations += "</ul>"
+
+    return formatted_recommendations
+
+
+
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port=8000)
