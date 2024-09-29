@@ -1,0 +1,4 @@
+Flask==2.1.0
+pdfplumber==0.5.28
+openai==0.14.0
+requests==2.26.0
